@@ -21,6 +21,7 @@ public class Program
         Console.WriteLine("Kódolatlan szöveg karakterisztikája:");
         Console.ResetColor();
         sourceString.GetStringCharacterCounts().PrintCharacterCounts();
+        Console.WriteLine();
 
         RunVigenere(sourceString);
         RunEnigma(sourceString);
@@ -48,15 +49,15 @@ public class Program
         Console.WriteLine();
 
         Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine("Vigenère által kódolt szöveg karakterisztikája:");
+        Console.ResetColor();
+        vigenereEncodedString.GetStringCharacterCounts().PrintCharacterCounts();
+
+        Console.ForegroundColor = ConsoleColor.Blue;
         Console.WriteLine("Vigenère által dekódolt szöveg:");
         Console.ResetColor();
         Console.WriteLine(vigenereEncryption.Decode(vigenereEncodedString));
         Console.WriteLine();
-
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.WriteLine("Vigenère által kódolt szöveg karakterisztikája:");
-        Console.ResetColor();
-        vigenereEncodedString.GetStringCharacterCounts().PrintCharacterCounts();
     }
 
     private static void RunEnigma(string sourceString)
@@ -87,6 +88,7 @@ public class Program
         Console.WriteLine("Enigma által dekódolt szöveg:");
         Console.ResetColor();
         Console.WriteLine(enigmaMachine.Run(enigmaEncodedString));
+        Console.WriteLine();
     }
 
     public static VigenereEncryptor CreateVigenere(string key, bool isHungarian = true)

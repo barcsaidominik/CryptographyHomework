@@ -63,11 +63,13 @@ public class Program
     private static void RunEnigma(string sourceString)
     {
         var enigmaMachine = CreateEnigmaM3(
+            CharacterHelper.ENGLISH_ALPHABET,
             ["V", "III", "II"],
             'B',
-            ['a', 'k', 'k'],
-            ['f', 'd', 'v'],
-            [['a', 'o'], ['h', 'i'], ['m', 'u'], ['s', 'n'], ['v', 'x'], ['z', 'q']]
+            ['A', 'K', 'K'],
+            ['F', 'D', 'V'],
+            [['A', 'O'], ['H', 'I'], ['M', 'U'], ['S', 'N'], ['V', 'X'], ['Z', 'Q']],
+            CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS
         );
         Console.WriteLine(enigmaMachine);
 
@@ -97,64 +99,41 @@ public class Program
     }
 
     public static EnigmaMachine CreateEnigmaM3(
+        string alphabet,
         string[] selectedRotors,
         char selectedReflector,
-        char[]? selectedRotorRings = null,
-        char[]? selectedRotorStarts = null,
-        char[][]? plugboardSettings = null,
-        bool isLower = true,
-        bool isHungarian = true
+        char[]? selectedRings = null,
+        char[]? selectedStarts = null,
+        char[][]? plugs = null,
+        string? alphabetExtensions = null
     )
     {
-        selectedRotorRings ??= Enumerable.Repeat(isLower ? 'a' : 'A', 3).ToArray();
-        selectedRotorStarts ??= Enumerable.Repeat(isLower ? 'a' : 'A', 3).ToArray();
+        selectedRings ??= ['A', 'A', 'A'];
+        selectedStarts ??= ['A', 'A', 'A'];
 
-        if (selectedRotors.Length != 3 || selectedRotorRings.Length != 3 || selectedRotorStarts.Length != 3)
+        if (selectedRotors.Length != 3 || selectedRings.Length != 3 || selectedStarts.Length != 3)
         {
             throw new ArgumentException("Rotors, rotor rings and rotor starts must have 3 elements.");
         }
 
-        var alphabet = isLower
-            ? isHungarian ? CharacterHelper.HUNGARIAN_ALPHABET : CharacterHelper.ENGLISH_ALPHABET
-            : isHungarian ? CharacterHelper.HUNGARIAN_ALPHABET_UPPER : CharacterHelper.ENGLISH_ALPHABET_UPPER;
-
         List<Rotor> rotors = [];
         for (int i = 0; i < selectedRotors.Length; i++)
         {
-            var (wiring, notch) = EnigmaMachine.GetRotor(selectedRotors[i], isLower);
-            if (isHungarian)
-            {
-                wiring += isLower ? CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS : CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS_UPPER;
-            }
-
-            rotors.Add(new(alphabet, wiring, notch, selectedRotorRings[i], selectedRotorStarts[i]));
+            var rotor = Rotor.Create(alphabet, selectedRotors[i], selectedRings[i], selectedStarts[i], alphabetExtensions);
+            rotors.Add(rotor);
         }
 
-        var reflectorWiring = EnigmaMachine.GetReflectorWiring(selectedReflector, isLower);
-        if (isHungarian)
-        {
-            if (isLower)
-            {
-                reflectorWiring += CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS;
-            }
-            else
-            {
-                reflectorWiring += CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS_UPPER;
-            }
-        }
+        var reflector = Reflector.Create(alphabet, selectedReflector, alphabetExtensions);
 
-        var reflector = new Reflector(alphabet, reflectorWiring);
-
-        Plugboard? plugboard = null;
-        if (plugboardSettings is { Length: > 0 })
+        Plugboard plugboard = new();
+        if (plugs is { Length: > 0 })
         {
-            plugboard = new();
-            foreach (var pair in plugboardSettings)
+            foreach (var pair in plugs)
             {
                 plugboard.AddPlug(pair[0], pair[1]);
             }
         }
 
-        return new EnigmaMachine(alphabet, rotors, reflector, plugboard, isLower);
+        return new EnigmaMachine(alphabet + alphabetExtensions, rotors, reflector, plugboard);
     }
 }

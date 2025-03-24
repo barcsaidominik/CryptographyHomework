@@ -8,6 +8,9 @@ public class Plugboard
 
     public void AddPlug(char from, char to)
     {
+        from = char.ToUpper(from);
+        to = char.ToUpper(to);
+
         if (from == to)
         {
             throw new ArgumentException("Cannot swap a character with itself.");
@@ -24,6 +27,9 @@ public class Plugboard
 
     public void RemovePlug(char from, char to)
     {
+        from = char.ToUpper(from);
+        to = char.ToUpper(to);
+
         if (_swaps.TryGetValue(from, out var value) && value == to)
         {
             _swaps.Remove(from);
@@ -38,6 +44,11 @@ public class Plugboard
 
     public override string ToString()
     {
+        if (_swaps.Count == 0)
+        {
+            return "No plugs added.";
+        }
+
         var output = new StringBuilder();
         var processed = new HashSet<char>();
         foreach (var item in _swaps)

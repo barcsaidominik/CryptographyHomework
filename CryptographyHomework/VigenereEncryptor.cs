@@ -14,6 +14,9 @@ public class VigenereEncryptor
         ArgumentException.ThrowIfNullOrEmpty(alphabet, nameof(alphabet));
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
+        alphabet = alphabet.ToUpper();
+        key = key.ToUpper();
+
         foreach (var character in key)
         {
             if (!alphabet.Contains(character))
@@ -42,16 +45,22 @@ public class VigenereEncryptor
         var output = new StringBuilder();
         foreach (var character in input)
         {
-            var lowerCharacter = char.ToLower(character);
-            if (!_alphabet.Contains(lowerCharacter))
+            var wasLower = char.IsLower(character);
+            var upperCharacter = char.ToUpper(character);
+            if (!_alphabet.Contains(upperCharacter))
             {
                 output.Append(character);
                 continue;
             }
 
-            var characterIndex = _alphabet.IndexOf(char.ToLower(character));
-            var keyCharacterIndex = _alphabet.IndexOf(char.ToLower(_key[keyIndex]));
-            output.Append(_vigenereTable[characterIndex, keyCharacterIndex]);
+            var characterIndex = _alphabet.IndexOf(upperCharacter);
+            var keyCharacterIndex = _alphabet.IndexOf(_key[keyIndex]);
+
+            var encodedCharacter = _vigenereTable[characterIndex, keyCharacterIndex];
+            encodedCharacter = wasLower ? char.ToLower(encodedCharacter) : encodedCharacter;
+
+            output.Append(encodedCharacter);
+
             keyIndex = (keyIndex + 1) % _key.Length;
         }
 
@@ -64,17 +73,23 @@ public class VigenereEncryptor
         var output = new StringBuilder();
         foreach (var character in input)
         {
-            var lowerCharacter = char.ToLower(character);
-            if (!_alphabet.Contains(lowerCharacter))
+            var wasLower = char.IsLower(character);
+            var upperCharacter = char.ToUpper(character);
+            if (!_alphabet.Contains(upperCharacter))
             {
                 output.Append(character);
                 continue;
             }
 
-            var keyCharacterIndex = _alphabet.IndexOf(char.ToLower(_key[keyIndex]));
-            var characterIndex = _alphabet.IndexOf(lowerCharacter);
+            var keyCharacterIndex = _alphabet.IndexOf(_key[keyIndex]);
+            var characterIndex = _alphabet.IndexOf(upperCharacter);
             var decodedIndex = (characterIndex - keyCharacterIndex + _alphabetLength) % _alphabetLength;
-            output.Append(_alphabet[decodedIndex]);
+
+            var decodedCharacter = _alphabet[decodedIndex];
+            decodedCharacter = wasLower ? char.ToLower(decodedCharacter) : decodedCharacter;
+
+            output.Append(decodedCharacter);
+
             keyIndex = (keyIndex + 1) % _key.Length;
         }
 
@@ -84,39 +99,62 @@ public class VigenereEncryptor
     public string GetTableString()
     {
         var output = new StringBuilder();
-        output.AppendLine();
+        AppendTopBorder(output);
+
         for (var rowIndex = 0; rowIndex < _alphabetLength; rowIndex++)
         {
-            output.Append(' ');
-            for (var columnIndex = 0; columnIndex < _alphabetLength; columnIndex++)
-            {
-                if (columnIndex != 0)
-                {
-                    output.Append(" │ ");
-                }
-
-                output.Append(_vigenereTable[rowIndex, columnIndex]);
-            }
-
+            AppendRow(output, rowIndex);
             if (rowIndex != _alphabetLength - 1)
             {
-                output.AppendLine();
-                for (var columnIndex = 0; columnIndex < _alphabetLength * 2 - 1; columnIndex++)
-                {
-                    if (columnIndex % 2 != 0)
-                    {
-                        output.Append("┼");
-                    }
-                    else
-                    {
-                        output.Append("───");
-                    }
-                }
+                AppendMiddleBorder(output);
             }
-
-            output.AppendLine();
         }
 
+        AppendBottomBorder(output);
         return output.ToString();
+    }
+
+    private void AppendTopBorder(StringBuilder output)
+    {
+        output.Append('┌');
+        for (var columnIndex = 2; columnIndex < _alphabetLength * 2 + 1; columnIndex++)
+        {
+            output.Append(columnIndex % 2 != 0 ? '┬' : "───");
+        }
+        output.Append('┐').AppendLine();
+    }
+
+    private void AppendMiddleBorder(StringBuilder output)
+    {
+        output.Append('├');
+        for (var columnIndex = 2; columnIndex < _alphabetLength * 2 + 1; columnIndex++)
+        {
+            output.Append(columnIndex % 2 != 0 ? '┼' : "───");
+        }
+        output.Append('┤').AppendLine();
+    }
+
+    private void AppendBottomBorder(StringBuilder output)
+    {
+        output.Append('└');
+        for (var columnIndex = 2; columnIndex < _alphabetLength * 2 + 1; columnIndex++)
+        {
+            output.Append(columnIndex % 2 != 0 ? '┴' : "───");
+        }
+        output.Append('┘');
+    }
+
+    private void AppendRow(StringBuilder output, int rowIndex)
+    {
+        output.Append("│ ");
+        for (var columnIndex = 0; columnIndex < _alphabetLength; columnIndex++)
+        {
+            if (columnIndex != 0)
+            {
+                output.Append(" │ ");
+            }
+            output.Append(_vigenereTable[rowIndex, columnIndex]);
+        }
+        output.Append(" │").AppendLine();
     }
 }

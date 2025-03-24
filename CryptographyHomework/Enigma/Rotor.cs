@@ -2,6 +2,12 @@ namespace CryptographyHomework.Enigma;
 
 public class Rotor
 {
+    private static readonly (string Wiring, char Notch) RotorI = ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q');
+    private static readonly (string Wiring, char Notch) RotorII = ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E');
+    private static readonly (string Wiring, char Notch) RotorIII = ("BDFHJLCPRTXVZNYEIWGAKMUSQO", 'V');
+    private static readonly (string Wiring, char Notch) RotorIV = ("ESOVPZJAYQUIRHXLNFTGKDCMWB", 'J');
+    private static readonly (string Wiring, char Notch) RotorV = ("VZBRGITYUPSDNHLXAWMJQOFECK", 'Z');
+
     private readonly string _alphabet;
     private readonly string _wiring;
     private readonly int _notchIndex;
@@ -12,10 +18,17 @@ public class Rotor
     private int[] _map;
     private int[] _reverseMap;
 
-    public Rotor(string alphabet, string wiring, char notchCharacter, char ringCharacter = 'a', char startCharacter = 'a')
+    private Rotor(string alphabet, string wiring, char notchCharacter, char ringCharacter, char startCharacter)
     {
         ArgumentException.ThrowIfNullOrEmpty(alphabet, nameof(alphabet));
         ArgumentException.ThrowIfNullOrEmpty(wiring, nameof(wiring));
+
+        alphabet = alphabet.ToUpper();
+        wiring = wiring.ToUpper();
+        notchCharacter = char.ToUpper(notchCharacter);
+        ringCharacter = char.ToUpper(ringCharacter);
+        startCharacter = char.ToUpper(startCharacter);
+
         if (alphabet.Length != wiring.Length)
         {
             throw new ArgumentException("Alphabet and wiring must have the same length.");
@@ -88,7 +101,56 @@ public class Rotor
 
     public override string ToString()
     {
-        return $"Wiring: {_wiring}, notch: {_alphabet[_notchIndex]}, ring: {_alphabet[_ringOffset]}, start: {_alphabet[_startIndex]}";
+        return $"Wiring: {_wiring}, Notch: {_alphabet[_notchIndex]}, Ring: {_alphabet[_ringOffset]}, Start: {_alphabet[_startIndex]}";
+    }
+
+    public static Rotor Create(
+        string alphabet,
+        string selectedRotor,
+        char? selectedRing = null,
+        char? selectedStart = null,
+        string? alphabetExtensions = null
+    )
+    {
+        return selectedRotor switch
+        {
+            "I" => new Rotor(
+                alphabet + alphabetExtensions,
+                RotorI.Wiring + alphabetExtensions,
+                RotorI.Notch,
+                selectedRing ?? 'A',
+                selectedStart ?? 'A'
+            ),
+            "II" => new Rotor(
+                alphabet + alphabetExtensions,
+                RotorII.Wiring + alphabetExtensions,
+                RotorII.Notch,
+                selectedRing ?? 'A',
+                selectedStart ?? 'A'
+            ),
+            "III" => new Rotor(
+                alphabet + alphabetExtensions,
+                RotorIII.Wiring + alphabetExtensions,
+                RotorIII.Notch,
+                selectedRing ?? 'A',
+                selectedStart ?? 'A'
+            ),
+            "IV" => new Rotor(
+                alphabet + alphabetExtensions,
+                RotorIV.Wiring + alphabetExtensions,
+                RotorIV.Notch,
+                selectedRing ?? 'A',
+                selectedStart ?? 'A'
+            ),
+            "V" => new Rotor(
+                alphabet + alphabetExtensions,
+                RotorV.Wiring + alphabetExtensions,
+                RotorV.Notch,
+                selectedRing ?? 'A',
+                selectedStart ?? 'A'
+            ),
+            _ => throw new ArgumentException("Invalid rotor.", nameof(selectedRotor))
+        };
     }
 
     private char GetMappedCharacter(char character, int[] map)

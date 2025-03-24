@@ -4,33 +4,12 @@ namespace CryptographyHomework.Enigma;
 
 public class EnigmaMachine
 {
-    public static readonly (string Wiring, char Notch) RotorI = ("ekmflgdqvzntowyhxuspaibrcj", 'q');
-    public static readonly (string Wiring, char Notch) RotorII = ("ajdksiruxblhwtmcqgznpyfvoe", 'e');
-    public static readonly (string Wiring, char Notch) RotorIII = ("bdfhjlcprtxvznyeiwgakmusqo", 'v');
-    public static readonly (string Wiring, char Notch) RotorIV = ("esovpzjayquirhxlnftgkdcmwb", 'j');
-    public static readonly (string Wiring, char Notch) RotorV = ("vzbrgityupsdnhlxawmjqofeck", 'z');
-
-    public static readonly (string Wiring, char Notch) RotorI_Upper = ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q');
-    public static readonly (string Wiring, char Notch) RotorII_Upper = ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E');
-    public static readonly (string Wiring, char Notch) RotorIII_Upper = ("BDFHJLCPRTXVZNYEIWGAKMUSQO", 'V');
-    public static readonly (string Wiring, char Notch) RotorIV_Upper = ("ESOVPZJAYQUIRHXLNFTGKDCMWB", 'J');
-    public static readonly (string Wiring, char Notch) RotorV_Upper = ("VZBRGITYUPSDNHLXAWMJQOFECK", 'Z');
-
-    public static readonly string ReflectorAWiring = "ejmzalyxvbwfcrquontspikhgd";
-    public static readonly string ReflectorBWiring = "yruhqsldpxngokmiebfzcwvjat";
-    public static readonly string ReflectorCWiring = "fvpjiaoyedrzxwgctkuqsbnmhl";
-
-    public static readonly string ReflectorAWiring_Upper = "EJMZALYXVBWFCRQUONTSPIKHGD";
-    public static readonly string ReflectorBWiring_Upper = "YRUHQSLDPXNGOKMIEBFZCWVJAT";
-    public static readonly string ReflectorCWiring_Upper = "FVPJIAOYEDRZXWGCTKUQSBNMHL";
-
     private readonly string _alphabet;
     private readonly List<Rotor> _rotors;
     private readonly Reflector _reflector;
     private readonly Plugboard _plugboard;
-    private readonly bool _isLower;
 
-    public EnigmaMachine(string alphabet, List<Rotor> rotors, Reflector reflector, Plugboard? plugboard = null, bool isLower = true)
+    public EnigmaMachine(string alphabet, List<Rotor> rotors, Reflector reflector, Plugboard plugboard)
     {
         ArgumentException.ThrowIfNullOrEmpty(alphabet, nameof(alphabet));
         ArgumentNullException.ThrowIfNull(rotors, nameof(rotors));
@@ -40,6 +19,9 @@ public class EnigmaMachine
         }
 
         ArgumentNullException.ThrowIfNull(reflector, nameof(reflector));
+        ArgumentNullException.ThrowIfNull(plugboard, nameof(plugboard));
+
+        alphabet = alphabet.ToUpper();
         if (rotors.Any(x => x.Alphabet != alphabet))
         {
             throw new ArgumentException("All rotors must have the same alphabet as the machine.", nameof(rotors));
@@ -53,8 +35,7 @@ public class EnigmaMachine
         _alphabet = alphabet;
         _rotors = rotors;
         _reflector = reflector;
-        _plugboard = plugboard ?? new();
-        _isLower = isLower;
+        _plugboard = plugboard;
     }
 
     public Plugboard Plugboard => _plugboard;
@@ -65,15 +46,18 @@ public class EnigmaMachine
         var output = new StringBuilder();
         foreach (var character in input)
         {
-            var correctedCaseCharacter = _isLower ? char.ToLower(character) : char.ToUpper(character);
-            if (!_alphabet.Contains(correctedCaseCharacter))
+            var wasLower = char.IsLower(character);
+            var upperCharacter = char.ToUpper(character);
+            if (!_alphabet.Contains(upperCharacter))
             {
                 output.Append(character);
                 continue;
             }
 
-            var encodedChar = EncodeCharacter(correctedCaseCharacter);
-            output.Append(encodedChar);
+            var encodedCharacter = EncodeCharacter(upperCharacter);
+            encodedCharacter = wasLower ? char.ToLower(encodedCharacter) : encodedCharacter;
+
+            output.Append(encodedCharacter);
         }
 
         return output.ToString();
@@ -112,54 +96,6 @@ public class EnigmaMachine
         output.AppendLine($"\t\t{_plugboard}");
 
         return output.ToString();
-    }
-
-    public static (string Wiring, char Notch) GetRotor(string input, bool isLower)
-    {
-        if (isLower)
-        {
-            return input switch
-            {
-                "I" => RotorI,
-                "II" => RotorII,
-                "III" => RotorIII,
-                "IV" => RotorIV,
-                "V" => RotorV,
-                _ => throw new ArgumentException("Invalid rotor.", nameof(input))
-            };
-        }
-
-        return input switch
-        {
-            "I" => RotorI_Upper,
-            "II" => RotorII_Upper,
-            "III" => RotorIII_Upper,
-            "IV" => RotorIV_Upper,
-            "V" => RotorV_Upper,
-            _ => throw new ArgumentException("Invalid rotor.", nameof(input))
-        };
-    }
-
-    public static string GetReflectorWiring(char input, bool isLower)
-    {
-        if (isLower)
-        {
-            return input switch
-            {
-                'A' => ReflectorAWiring,
-                'B' => ReflectorBWiring,
-                'C' => ReflectorCWiring,
-                _ => throw new ArgumentException("Invalid reflector.", nameof(input))
-            };
-        }
-
-        return input switch
-        {
-            'A' => ReflectorAWiring_Upper,
-            'B' => ReflectorBWiring_Upper,
-            'C' => ReflectorCWiring_Upper,
-            _ => throw new ArgumentException("Invalid reflector.", nameof(input))
-        };
     }
 
     private char EncodeCharacter(char character)

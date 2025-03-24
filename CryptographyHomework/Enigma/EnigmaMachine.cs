@@ -74,26 +74,20 @@ public class EnigmaMachine
     public override string ToString()
     {
         var output = new StringBuilder();
-        output.AppendLine("Enigma Machine:");
+        output.AppendLine("Alphabet:");
+        output.AppendLine($"\t{_alphabet}");
 
-        output.AppendLine("\tAlphabet:");
-        output.AppendLine($"\t\t{_alphabet}");
-        output.AppendLine();
-
-        output.AppendLine("\tRotors:");
+        output.AppendLine("Rotors:");
         foreach (var rotor in _rotors)
         {
-            output.AppendLine($"\t\t{rotor}");
+            output.AppendLine($"\t{rotor}");
         }
 
-        output.AppendLine();
+        output.AppendLine("Reflector:");
+        output.AppendLine($"\t{_reflector}");
 
-        output.AppendLine("\tReflector:");
-        output.AppendLine($"\t\t{_reflector}");
-        output.AppendLine();
-
-        output.AppendLine("\tPlugboard:");
-        output.AppendLine($"\t\t{_plugboard}");
+        output.AppendLine("Plugboard:");
+        output.AppendLine($"\t{_plugboard}");
 
         return output.ToString();
     }

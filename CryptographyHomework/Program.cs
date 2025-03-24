@@ -71,6 +71,9 @@ public class Program
             [['A', 'O'], ['H', 'I'], ['M', 'U'], ['S', 'N'], ['V', 'X'], ['Z', 'Q']],
             CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS
         );
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine("Enigma Machine:");
+        Console.ResetColor();
         Console.WriteLine(enigmaMachine);
 
         var enigmaEncodedString = enigmaMachine.Run(sourceString);

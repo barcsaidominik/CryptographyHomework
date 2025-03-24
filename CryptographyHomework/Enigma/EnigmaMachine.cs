@@ -2,14 +2,16 @@
 
 namespace CryptographyHomework.Enigma;
 
-public class EnigmaMachine
+public partial class EnigmaMachine
 {
+    public record RotorSettings(string SelectedRotor, char? SelectedRing = null, char? SelectedStart = null);
+
     private readonly string _alphabet;
     private readonly List<Rotor> _rotors;
     private readonly Reflector _reflector;
     private readonly Plugboard _plugboard;
 
-    public EnigmaMachine(string alphabet, List<Rotor> rotors, Reflector reflector, Plugboard plugboard)
+    private EnigmaMachine(string alphabet, List<Rotor> rotors, Reflector reflector, Plugboard plugboard)
     {
         ArgumentException.ThrowIfNullOrEmpty(alphabet, nameof(alphabet));
         ArgumentNullException.ThrowIfNull(rotors, nameof(rotors));
@@ -37,8 +39,6 @@ public class EnigmaMachine
         _reflector = reflector;
         _plugboard = plugboard;
     }
-
-    public Plugboard Plugboard => _plugboard;
 
     public string Run(string input)
     {
@@ -90,6 +90,32 @@ public class EnigmaMachine
         output.AppendLine($"\t{_plugboard}");
 
         return output.ToString();
+    }
+
+    public static EnigmaMachine CreateEnigmaM3(
+        string alphabet,
+        RotorSettings[] rotorSettings,
+        char selectedReflector,
+        string[]? plugs = null,
+        string? alphabetExtensions = null
+    )
+    {
+        var rotors = rotorSettings?
+            .Select(x => Rotor.Create(alphabet, x.SelectedRotor, x.SelectedRing ?? 'A', x.SelectedStart ?? 'A', alphabetExtensions))
+            .ToList()
+            ?? [];
+
+        var reflector = Reflector.Create(alphabet, selectedReflector, alphabetExtensions);
+        Plugboard plugboard = new();
+        if (plugs is { Length: > 0 })
+        {
+            foreach (var pair in plugs)
+            {
+                plugboard.AddPlug(pair[0], pair[1]);
+            }
+        }
+
+        return new EnigmaMachine(alphabet + alphabetExtensions, rotors, reflector, plugboard);
     }
 
     private char EncodeCharacter(char character)

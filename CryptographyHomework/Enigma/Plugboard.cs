@@ -2,64 +2,67 @@
 
 namespace CryptographyHomework.Enigma;
 
-public class Plugboard
+public partial class EnigmaMachine
 {
-    private readonly Dictionary<char, char> _swaps = [];
-
-    public void AddPlug(char from, char to)
+    private class Plugboard
     {
-        from = char.ToUpper(from);
-        to = char.ToUpper(to);
+        private readonly Dictionary<char, char> _swaps = [];
 
-        if (from == to)
+        public void AddPlug(char from, char to)
         {
-            throw new ArgumentException("Cannot swap a character with itself.");
-        }
+            from = char.ToUpper(from);
+            to = char.ToUpper(to);
 
-        if (_swaps.ContainsKey(from) || _swaps.ContainsKey(to))
-        {
-            throw new ArgumentException("Plug already exists.");
-        }
-
-        _swaps[from] = to;
-        _swaps[to] = from;
-    }
-
-    public void RemovePlug(char from, char to)
-    {
-        from = char.ToUpper(from);
-        to = char.ToUpper(to);
-
-        if (_swaps.TryGetValue(from, out var value) && value == to)
-        {
-            _swaps.Remove(from);
-            _swaps.Remove(to);
-        }
-    }
-
-    public char Swap(char input)
-    {
-        return _swaps.TryGetValue(input, out char value) ? value : input;
-    }
-
-    public override string ToString()
-    {
-        if (_swaps.Count == 0)
-        {
-            return "No plugs added.";
-        }
-
-        var output = new StringBuilder();
-        var processed = new HashSet<char>();
-        foreach (var item in _swaps)
-        {
-            if (processed.Add(item.Key))
+            if (from == to)
             {
-                processed.Add(item.Value);
-                output.Append($"{item.Key}{item.Value} ");
+                throw new ArgumentException("Cannot swap a character with itself.");
+            }
+
+            if (_swaps.ContainsKey(from) || _swaps.ContainsKey(to))
+            {
+                throw new ArgumentException("Plug already exists.");
+            }
+
+            _swaps[from] = to;
+            _swaps[to] = from;
+        }
+
+        public void RemovePlug(char from, char to)
+        {
+            from = char.ToUpper(from);
+            to = char.ToUpper(to);
+
+            if (_swaps.TryGetValue(from, out var value) && value == to)
+            {
+                _swaps.Remove(from);
+                _swaps.Remove(to);
             }
         }
 
-        return output.ToString();
+        public char Swap(char input)
+        {
+            return _swaps.TryGetValue(input, out char value) ? value : input;
+        }
+
+        public override string ToString()
+        {
+            if (_swaps.Count == 0)
+            {
+                return "No plugs added.";
+            }
+
+            var output = new StringBuilder();
+            var processed = new HashSet<char>();
+            foreach (var item in _swaps)
+            {
+                if (processed.Add(item.Key))
+                {
+                    processed.Add(item.Value);
+                    output.Append($"{item.Key}{item.Value} ");
+                }
+            }
+
+            return output.ToString();
+        }
     }
 }

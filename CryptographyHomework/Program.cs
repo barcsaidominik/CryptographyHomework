@@ -30,7 +30,7 @@ public class Program
     private static void RunVigenere(string sourceString)
     {
         var vigenereEncryptionKey = "nagyontitkoskulcs";
-        var vigenereEncryption = CreateVigenere(vigenereEncryptionKey);
+        var vigenereEncryption = new VigenereEncryptor(CharacterHelper.HUNGARIAN_ALPHABET, vigenereEncryptionKey);
 
         Console.ForegroundColor = ConsoleColor.Blue;
         Console.WriteLine($"Vigenère-táblázat");
@@ -62,13 +62,15 @@ public class Program
 
     private static void RunEnigma(string sourceString)
     {
-        var enigmaMachine = CreateEnigmaM3(
+        var enigmaMachine = EnigmaMachine.CreateEnigmaM3(
             CharacterHelper.ENGLISH_ALPHABET,
-            ["V", "III", "II"],
+            [
+                new EnigmaMachine.RotorSettings("V", 'A', 'F'),
+                new EnigmaMachine.RotorSettings("III", 'K', 'D'),
+                new EnigmaMachine.RotorSettings("II", 'K', 'V'),
+            ],
             'B',
-            ['A', 'K', 'K'],
-            ['F', 'D', 'V'],
-            [['A', 'O'], ['H', 'I'], ['M', 'U'], ['S', 'N'], ['V', 'X'], ['Z', 'Q']],
+            ["AO", "HI", "MU", "SN", "VX", "ZQ"],
             CharacterHelper.HUNGARIAN_ACCENTED_CHARACTERS
         );
         Console.ForegroundColor = ConsoleColor.Blue;
@@ -94,49 +96,5 @@ public class Program
         Console.ResetColor();
         Console.WriteLine(enigmaMachine.Run(enigmaEncodedString));
         Console.WriteLine();
-    }
-
-    public static VigenereEncryptor CreateVigenere(string key, bool isHungarian = true)
-    {
-        return new VigenereEncryptor(isHungarian ? CharacterHelper.HUNGARIAN_ALPHABET : CharacterHelper.ENGLISH_ALPHABET, key);
-    }
-
-    public static EnigmaMachine CreateEnigmaM3(
-        string alphabet,
-        string[] selectedRotors,
-        char selectedReflector,
-        char[]? selectedRings = null,
-        char[]? selectedStarts = null,
-        char[][]? plugs = null,
-        string? alphabetExtensions = null
-    )
-    {
-        selectedRings ??= ['A', 'A', 'A'];
-        selectedStarts ??= ['A', 'A', 'A'];
-
-        if (selectedRotors.Length != 3 || selectedRings.Length != 3 || selectedStarts.Length != 3)
-        {
-            throw new ArgumentException("Rotors, rotor rings and rotor starts must have 3 elements.");
-        }
-
-        List<Rotor> rotors = [];
-        for (int i = 0; i < selectedRotors.Length; i++)
-        {
-            var rotor = Rotor.Create(alphabet, selectedRotors[i], selectedRings[i], selectedStarts[i], alphabetExtensions);
-            rotors.Add(rotor);
-        }
-
-        var reflector = Reflector.Create(alphabet, selectedReflector, alphabetExtensions);
-
-        Plugboard plugboard = new();
-        if (plugs is { Length: > 0 })
-        {
-            foreach (var pair in plugs)
-            {
-                plugboard.AddPlug(pair[0], pair[1]);
-            }
-        }
-
-        return new EnigmaMachine(alphabet + alphabetExtensions, rotors, reflector, plugboard);
     }
 }
